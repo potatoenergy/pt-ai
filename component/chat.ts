@@ -1,10 +1,11 @@
 import Groq from "groq-sdk";
-import { apiKey, model_third } from "../misc/config";
+import { apiKey, model_main, model_third } from "../misc/config";
 import { FilterConversation } from "./ai-prompt/filter";
 import { identity, optionInformation, personality } from "./ai-prompt/character";
 import { identityCharacter } from "./ai-prompt/identity";
 import { CommandMenu } from "./ai-prompt/command";
 import { expressionCharacter } from "./ai-prompt/expression";
+import { bannedWord, messageBanned } from "./ai-prompt/ban";
 
 // Define types for messages and conversation log
 interface Message {
@@ -48,8 +49,11 @@ export async function SendChat(userMessage: string, name: string, page: any): Pr
   Please respond in Indonesian. ${FilterConversation(optionInformation)}
   kamu harus ingat bahwa hari ini adalah hari ${new Date()}
   kamu juga mempunyai sifat seperti ${personality.character}
-  dan kamu juga mempunyai watak seperti ${personality.personality}`;
+  dan kamu juga mempunyai watak seperti ${personality.personality}
+  kamu ga boleh ngomong kata kata yang sudah di banned ini ${messageBanned}`;
 
+
+  console.log(messageBanned);
   // Add the system message and the user message to the messages array
   const messages: Message[] = [
     { role: "system", content: systemMessage },
@@ -65,8 +69,10 @@ export async function SendChat(userMessage: string, name: string, page: any): Pr
   // Generate the chat completion response
   const chatCompletion = await groq.chat.completions.create({
     messages: messages,
-    model: model_third,
+    model: model_main,
+    temperature: 0.3, 
   });
+  
 
   // Ensure the response is not null
   const reply = chatCompletion.choices[0].message.content;

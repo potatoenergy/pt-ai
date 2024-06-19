@@ -18,5 +18,22 @@ export const expressionCharacter = {
   Cry: ["Cry", "Nangis", "Menangis", "Cengeng", "Ngambek", "Bersedih", "Tangisan", "Meratap"],
   Tears: ["Tears", "Air mata", "Sedih", "Meneteskan air mata", "Tangisan", "Isak", "Isakan"],
   Shocked: ["Shocked", "Terkejut", "Kaget", "Tercengang", "Terkaget", "Kaget sekali", "Terperangah"],
-  Kiss: ["Kiss", "Cium", "Ciuman", "Mencium", "Pecah", "Kecupan", "Kecup"]
+  Kiss: ["Kiss", "Cium", "Ciuman", "Mencium", "Pecah", "Kecupan", "Kecup"],
+  "Sit down / Land": ["Sit down", "Land", "Duduk", "Mendarat", "Turun"],
+  "Stand up / Fly up": ["Stand up", "Fly up", "Berdiri", "Terbang", "Naik"],
+  Boop: ["Boop", "Sentuh", "Tekan", "Sentuhan", "Tepuk"],
+  "Turn head": ["Turn head", "Putar kepala", "Gerakkan kepala", "Belokkan kepala", "nengok", "tengok kesamping", "nengok kesamping"],
+  "Use item / Interact": ["Use item", "Interact", "Gunakan item", "Berinteraksi", "Pakai barang"],
+  "Eat item": ["Eat item", "Makan barang", "Makan", "Konsumsi", "Memakan"],
+  "Nom item": ["Nom item", "Kunyah barang", "Ngemil", "Makan kecil", "Cemil"],
+  "Drop item": ["Drop item", "Jatuhkan barang", "Lepas barang", "Buang barang"],
+  "Drop toy": ["Drop toy", "Jatuhkan mainan", "Lepas mainan", "Buang mainan"],
+  "Drop dish": ["Drop dish", "Jatuhkan piring", "Lepas piring", "Buang piring"],
+  "Select toy": ["Select toy", "Pilih mainan", "Ambil mainan"],
+  Magic: ["Magic", "Sihir", "Mantra", "Ajaib"],
+  "Pull mask down/up": ["Pull mask down", "Pull mask up", "Tarik masker turun", "Tarik masker naik"],
+  "Edit character": ["Edit character", "Ubah karakter", "Sunting karakter"],
+  "Zoom in": ["Zoom in", "Perbesar", "Dekatkan"],
+  "Zoom out": ["Zoom out", "Perkecil", "Jauhkan"],
+  "Center camera": ["Center camera", "Pusatkan kamera", "Tengah kamera"]
 };
