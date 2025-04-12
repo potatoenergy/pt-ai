@@ -7,3 +7,6 @@ node_modules/
 # Ignore lock files
 package-lock.json
 yarn.lock
+
+# Ignore logs
+logs/*.png
