@@ -29,7 +29,7 @@ export class ChatResponseHandler {
       const response = await this.generateResponse(message.text, message.sender);
       if (response) {
         await ChatHelper.sendMessage(this.page, response);
-        logger.info(`Responded to chat message from ${message.sender}`);
+        logger.info(`Responded to chat message from: ${message.sender}`);
         return true;
       }
     } catch (error) {
