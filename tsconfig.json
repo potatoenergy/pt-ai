@@ -3,7 +3,7 @@
     "target": "ES2020",
     "module": "CommonJS",
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": ".",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -13,7 +13,8 @@
     ]
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "plugins/**/*"
   ],
   "exclude": [
     "node_modules"
