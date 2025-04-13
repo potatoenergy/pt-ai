@@ -6,6 +6,7 @@ import { ChatHelper } from '../../../utils/helpers';
 
 export class CommandHandler {
   private aiClient: AIClient;
+  private generationStartTime: number | null = null;
 
   constructor(private page: Page) {
     this.aiClient = new AIClient(page);
@@ -19,14 +20,11 @@ export class CommandHandler {
 
     try {
       switch (command.toLowerCase()) {
-        case 'c':
+        case 'ai':
           await this.handleAICommand(args, message.sender);
           return true;
-        case 'say':
+        case 'echo':
           await this.handleSayCommand(args);
-          return true;
-        case 'cstop':
-          this.handleStopCommand();
           return true;
         default:
           return false;
@@ -48,21 +46,29 @@ export class CommandHandler {
   private async handleAICommand(args: string, sender: string) {
     if (!args) return;
 
+    this.generationStartTime = Date.now();
+
     const response = await this.aiClient.generateResponse(args, sender);
     if (response) {
       await this.sendChatResponse(response);
     }
+
+    this.generationStartTime = null;
   }
 
   private async handleSayCommand(args: string) {
     await this.sendChatResponse(args);
   }
 
-  private handleStopCommand() {
-    this.aiClient.abortCurrentRequest();
-  }
-
   private async sendChatResponse(text: string) {
     await ChatHelper.sendMessage(this.page, text);
+  }
+
+  public checkGenerationTimeout() {
+    if (this.generationStartTime && Date.now() - this.generationStartTime > 120000) {
+      this.aiClient.abortCurrentRequest();
+      this.generationStartTime = null;
+      logger.warn('AI generation timeout exceeded. Stopping current request.');
+    }
   }
 }

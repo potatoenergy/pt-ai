@@ -9,6 +9,7 @@ import { logger } from './utils/logger';
 import { ChatMessage } from './types';
 import { ChatHelper } from './utils/helpers';
 import { AdvancedChatHandler } from './modules/chat/handlers/advanced';
+import { ChatResponseHandler } from './modules/chat/handlers/response';
 
 async function main() {
   try {
@@ -42,12 +43,14 @@ async function main() {
     const commandHandler = new CommandHandler(page);
     const emoteHandler = new EmoteHandler(page);
     const advancedHandler = new AdvancedChatHandler(page);
+    const chatResponseHandler = new ChatResponseHandler(page);
 
     chatListener.subscribe(async (message: ChatMessage) => {
       try {
         if (await commandHandler.handle(message)) return;
         if (await emoteHandler.handle(message)) return;
         if (await advancedHandler.handleAdvancedBehavior(message)) return;
+        if (await chatResponseHandler.handle(message)) return;
       } catch (error) {
         logger.error(`Error processing message: ${error}`);
       }

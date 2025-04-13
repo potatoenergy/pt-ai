@@ -28,7 +28,7 @@ export const CONFIG = {
     SESSION: process.env.SESSION!
   },
   BOT: {
-    LANGUAGE: SUPPORTED_LANGUAGES.includes(process.env.LANGUAGE as any) 
+    LANGUAGE: SUPPORTED_LANGUAGES.includes(process.env.LANGUAGE as any)
       ? process.env.LANGUAGE as typeof SUPPORTED_LANGUAGES[number]
       : 'en',
     RESPONSE_INTERVAL: parseInt(process.env.RESPONSE_INTERVAL || '300000'),
@@ -41,6 +41,10 @@ export const CONFIG = {
       TARGET_SELECTED: 'Обнаружен выбранный игрок: {name} 🎯',
       GREETING: process.env.PROMPTS_GREETING || 'Приветствую всех в Pony Town! 🦄',
       IDLE: process.env.PROMPTS_IDLE || 'Осматриваю окрестности... Вижу много интересного! 🌈'
+    },
+    CHAT_RESPONSE: {
+      ENABLED: process.env.CHAT_RESPONSE_ENABLED === 'true',
+      PROBABILITY: parseFloat(process.env.CHAT_RESPONSE_PROBABILITY || '0.1')
     }
   }
 };
