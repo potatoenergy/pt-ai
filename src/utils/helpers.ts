@@ -13,7 +13,7 @@ export class ChatHelper {
       if (!isChatOpen) {
         await page.click('chat-box ui-button[title="Toggle chat"] button');
         await page.waitForSelector('chat-box > div.chat-box:not([hidden])', { timeout: 10000 });
-        await page.waitForTimeout(1500);
+        await new Promise((resolve) => setTimeout(resolve, 1500));
       }
 
       const textareaSelector = 'chat-box textarea[aria-label="Chat message"]';
@@ -26,7 +26,7 @@ export class ChatHelper {
 
       for (const char of text) {
         await page.type(textareaSelector, char, { delay: Math.random() * 80 + 40 });
-        await page.waitForTimeout(Math.random() * 150);
+        await new Promise((resolve) => setTimeout(resolve, Math.random() * 150));
       }
 
       const sendButtonSelector = 'chat-box ui-button[title="Send message (hold Shift to send without closing input)"] button';
@@ -43,9 +43,9 @@ export class ChatHelper {
       }, { timeout: 15000 }, sendButtonSelector);
 
       await page.hover(sendButtonSelector);
-      await page.waitForTimeout(500 + Math.random() * 300);
+      await new Promise((resolve) => setTimeout(resolve, 500 + Math.random() * 300));
       await page.click(sendButtonSelector);
-      await page.waitForTimeout(1000);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       logger.info(`Message sent: ${text}`);
     } catch (error) {

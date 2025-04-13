@@ -36,7 +36,7 @@ async function main() {
     logger.info('Initializing game...');
     await BrowserUtils.waitForGameLoad(page);
     await BrowserUtils.clickPlayButton(page);
-    await page.waitForTimeout(5000);
+    await new Promise((resolve) => setTimeout(resolve, 5000));
     // await ChatHelper.sendMessage(page, 'Hi! :paws:');
 
     const chatListener = new ChatListener(page);
