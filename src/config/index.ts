@@ -14,8 +14,8 @@ export const CONFIG = {
     API_KEY: process.env.OPENAI_API_KEY!,
     MODEL: process.env.OPENAI_MODEL!,
     BASE_URL: process.env.OPENAI_BASE_URL,
-    MAX_TOKENS: 150,
-    TEMPERATURE: 0.7
+    MAX_TOKENS: 50,
+    TEMPERATURE: 0.8
   },
   BROWSER: {
     USER_AGENT: process.env.USER_AGENT!,
