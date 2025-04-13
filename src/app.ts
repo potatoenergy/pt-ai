@@ -36,7 +36,7 @@ async function main() {
     await BrowserUtils.waitForGameLoad(page);
     await BrowserUtils.clickPlayButton(page);
     await page.waitForTimeout(5000);
-    // await ChatHelper.sendMessage(page, 'Привет! :paws:');
+    // await ChatHelper.sendMessage(page, 'Hi! :paws:');
 
     const chatListener = new ChatListener(page);
     const commandHandler = new CommandHandler(page);
@@ -52,7 +52,6 @@ async function main() {
         logger.error(`Error processing message: ${error}`);
       }
     });
-
 
     logger.info('Starting chat listener...');
     await chatListener.startListening();

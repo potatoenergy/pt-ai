@@ -15,14 +15,15 @@ A Simple ChatBot for Pony Town
 Create a `.env` file based on the provided `.env.example`:
 
 ```dotenv
+LANGUAGE=en
 OPENAI_API_KEY=your-api-key-here
 OPENAI_MODEL=your-model-here
 OPENAI_BASE_URL=https://your-openai-base-url.com
-PERSONALITY_NAME=Ponfertato
-PERSONALITY_TRAITS=['дружелюбный', 'ироничный', 'любознательный']
-PERSONALITY_SPEECH_STYLE=Используй современный молодежный сленг и эмодзи 🦄
-PROMPTS_GREETING=Привет-привет! Чем займемся сегодня? 😎
-PROMPTS_IDLE=Тишина... Может устроим танцевальный баттл? 💃
+PERSONALITY_NAME=PixelHoof
+PERSONALITY_TRAITS=['curious', 'playful', 'expressive']
+PERSONALITY_SPEECH_STYLE=Use gaming slang and character-appropriate emotes 🦄
+PROMPTS_GREETING=Hey folks! Ready for some fun? 😎
+PROMPTS_IDLE=Looking around... Anyone up for a dance battle? 💃
 RESPONSE_INTERVAL=180000 # 3 минуты
 USER_AGENT="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chromium/134.0.0.0 Safari/537.36"
 CHROMIUM_PATH=/path/to/chromium
@@ -33,6 +34,7 @@ CF_CLEARANCE=your-clearance-cookie
 - **OPENAI_API_KEY**: Your OpenAI API key.
 - **OPENAI_MODEL**: The model to use for generating responses.
 - **OPENAI_BASE_URL**: The base URL for the OpenAI API.
+- **LANGUAGE**: Supported: en, ru, es, fr, etc.
 - **PERSONALITY_NAME**: The name of the bot's personality.
 - **PERSONALITY_TRAITS**: Traits of the bot's personality (comma-separated).
 - **PERSONALITY_SPEECH_STYLE**: Style of speech for the bot.
@@ -54,11 +56,11 @@ import { Plugin } from '../src/modules/plugins/manager';
 import { ChatMessage } from '../src/types';
 
 export class ExamplePlugin implements Plugin {
-  name = 'Example Plugin';
+  name = 'Greeting Plugin';
   priority = 100;
 
   async handler(message: ChatMessage): Promise<boolean> {
-    if (message.text.toLowerCase().includes('привет')) {
+    if (message.text.toLowerCase().includes('hello')) {
       await this.handleGreeting(message);
       return true;
     }
@@ -66,7 +68,7 @@ export class ExamplePlugin implements Plugin {
   }
 
   private async handleGreeting(message: ChatMessage) {
-    // Logic for handling greeting
+    // Greeting handling logic
   }
 }
 ```

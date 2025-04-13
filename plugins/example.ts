@@ -2,11 +2,11 @@ import { Plugin } from '../src/modules/plugins/manager';
 import { ChatMessage } from '../src/types';
 
 export class ExamplePlugin implements Plugin {
-  name = 'Example Plugin';
+  name = 'Greeting Plugin';
   priority = 100;
 
   async handler(message: ChatMessage): Promise<boolean> {
-    if (message.text.toLowerCase().includes('привет')) {
+    if (message.text.toLowerCase().includes('hello')) {
       await this.handleGreeting(message);
       return true;
     }
@@ -14,6 +14,6 @@ export class ExamplePlugin implements Plugin {
   }
 
   private async handleGreeting(message: ChatMessage) {
-    // Логика обработки приветствия
+    // Greeting handling logic
   }
 }

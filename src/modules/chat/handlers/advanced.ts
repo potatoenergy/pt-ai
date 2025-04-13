@@ -8,7 +8,7 @@ import { CONFIG } from '../../../config';
 export class AdvancedChatHandler {
   private aiClient: AIClient;
   private playerSelector: PlayerSelector;
-  private lastResponseTime = Date.now();
+  private lastResponseTime = 0;
   private currentTarget: string | null = null;
 
   constructor(private page: Page) {
@@ -51,36 +51,48 @@ export class AdvancedChatHandler {
 
   private async handleTimedResponse(): Promise<boolean> {
     const interval = CONFIG.BOT.RESPONSE_INTERVAL;
-    const shouldRespond = Date.now() - this.lastResponseTime > interval;
+    const now = Date.now();
+    const shouldRespond = (now - this.lastResponseTime) > interval
+      && (now - this.lastResponseTime) < (interval * 2);
 
     if (shouldRespond && !this.currentTarget) {
-      const response = await this.generateIdleResponse();
-      await this.sendResponse(response);
-      this.lastResponseTime = Date.now();
-      logger.info('Sent timed response');
-      return true;
+      try {
+        const response = await this.generateIdleResponse();
+        if (!response || response.length < 2) {
+          logger.warn('Empty idle response');
+          return false;
+        }
+
+        await this.sendResponse(response);
+        this.lastResponseTime = now;
+        logger.info(`Sent timed response: ${response}`);
+        return true;
+      } catch (error) {
+        logger.error('Timed response failed:', error);
+      }
     }
     return false;
   }
 
   private async generateResponse(text: string, sender: string): Promise<string> {
     const context = this.currentTarget
-      ? `Текущая цель: ${this.currentTarget}\n`
-      : 'Автономный режим\n';
+      ? `Current target: ${this.currentTarget}\n`
+      : 'Autonomous mode\n';
 
-      const prompt = [
-        `${CONFIG.BOT.PERSONALITY.NAME} (${CONFIG.BOT.PERSONALITY.TRAITS.join(', ')})`,
-        `Стиль: ${CONFIG.BOT.PERSONALITY.SPEECH_STYLE}`,
-        `Жесткие ограничения:`,
-        `- Только 1-2 коротких предложения`,
-        `- Максимум 149 символов`,
-        `- Только разговорный стиль`,
-        `- Никаких Markdown`,
-        `- Используй эмодзи для выразительности`,
-        `Контекст: ${context}`,
-        `Сообщение: "${text}"`,
-        `Ответь как персонаж игры:`
-      ].join('\n');
+    const prompt = [
+      `${CONFIG.BOT.PERSONALITY.NAME} (${CONFIG.BOT.PERSONALITY.TRAITS.join(', ')})`,
+      `Language: ${CONFIG.BOT.LANGUAGE}`,
+      `Style: ${CONFIG.BOT.PERSONALITY.SPEECH_STYLE}`,
+      `Core directives:`,
+      `- Roleplay as in-game character`,
+      `- Use ${CONFIG.BOT.LANGUAGE} language`,
+      `- Respond to environment interactions`,
+      `- Keep responses 1-2 sentences (max 149 chars)`,
+      `- Use gaming slang and emojis`,
+      `Context: ${context}`,
+      `Message: "${text}"`,
+      `Generate in-character response:`
+    ].join('\n');
 
     const response = await this.aiClient.generateResponse(prompt, sender);
     if (!response) throw new Error('Failed to generate response');
@@ -88,14 +100,31 @@ export class AdvancedChatHandler {
   }
 
   private async generateIdleResponse(): Promise<string> {
-    const prompts = [
+    const environmentPrompts = {
+      en: [
+        "Noticing some cool outfits around! 🎨",
+        "Hear any good jokes lately? 😄",
+        "The weather here is perfect for grazing! 🌱"
+      ],
+      ru: [
+        "Кто-нибудь видел мой потерянный гриб? 🍄",
+        "Интересно, что там за холмом... 🌄",
+        "Погода сегодня отличная для прогулок! ☀️"
+      ]
+    };
+
+    const defaultPrompts = [
       CONFIG.BOT.PROMPTS.IDLE,
-      `Сейчас ${new Date().toLocaleTimeString()}... Что будем делать?`,
-      'Заметил что-то интересное вокруг?',
-      'Может обменяемся предметами?'
+      `It's ${new Date().toLocaleTimeString()}... Any plans?`,
+      'See anything interesting around?'
     ];
 
-    return prompts[Math.floor(Math.random() * prompts.length)];
+    const lang = CONFIG.BOT.LANGUAGE as keyof typeof environmentPrompts;
+    if (environmentPrompts.hasOwnProperty(lang)) {
+      const prompts = environmentPrompts[lang];
+      return prompts[Math.floor(Math.random() * prompts.length)];
+    }
+    return defaultPrompts[Math.floor(Math.random() * defaultPrompts.length)];
   }
 
   private async sendResponse(text: string): Promise<void> {

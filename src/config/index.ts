@@ -5,6 +5,7 @@ import { join } from 'path';
 const envConfig = dotenv.config({
   path: join(__dirname, '../../.env')
 });
+const SUPPORTED_LANGUAGES = ['en', 'ru'] as const;
 
 dotenvExpand.expand(envConfig);
 
@@ -27,6 +28,9 @@ export const CONFIG = {
     SESSION: process.env.SESSION!
   },
   BOT: {
+    LANGUAGE: SUPPORTED_LANGUAGES.includes(process.env.LANGUAGE as any) 
+      ? process.env.LANGUAGE as typeof SUPPORTED_LANGUAGES[number]
+      : 'en',
     RESPONSE_INTERVAL: parseInt(process.env.RESPONSE_INTERVAL || '300000'),
     PERSONALITY: {
       NAME: process.env.PERSONALITY_NAME || 'Unknown',
