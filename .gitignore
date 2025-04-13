@@ -9,6 +9,6 @@ package-lock.json
 yarn.lock
 
 # Ignore logs
-logs/*.png
+logs/screenshots/*.png
 logs/*.json
 logs/*.log
