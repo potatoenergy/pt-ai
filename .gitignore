@@ -10,3 +10,5 @@ yarn.lock
 
 # Ignore logs
 logs/*.png
+logs/*.json
+logs/*.log
