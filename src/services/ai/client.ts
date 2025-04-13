@@ -50,7 +50,6 @@ export class AIClient {
           return '';
         }
         logger.error(`AI API Error: ${error}`);
-        await ChatHelper.sendMessage(this.page, "Проблема с API. Попробуем еще раз...");
         attempt++;
         await new Promise(resolve => setTimeout(resolve, 5000 * attempt));
       } finally {
