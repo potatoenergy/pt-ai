@@ -1,4 +1,3 @@
-// /home/ponfertato/Документы/Git/pt-ai/src/modules/chat/handlers/chatResponse.ts
 import { Page } from 'puppeteer-core';
 import { ChatMessage } from '../../../types';
 import { logger } from '../../../utils/logger';
