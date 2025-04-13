@@ -97,6 +97,52 @@ export class ExamplePlugin implements Plugin {
 
 This project is based on the original work by [qiraxyz](https://github.com/qiraxyz/pt-ai).
 
+## Compliance Statement
+
+⚠️ **Important Notice Regarding Game Rules Compliance**
+
+This project is intended to be used in strict accordance with Pony Town's official game rules. 
+By using this software, you acknowledge and agree to the following:
+
+### Account Usage
+🔒 **Single Account Policy**  
+- You must not use this software to manage multiple accounts simultaneously  
+- The bot should only interact with **one authorized account** you personally own  
+- Any form of account sharing or automation farming is strictly prohibited  
+
+### Game Modifications
+🚫 **Scripting & Automation Restrictions**  
+- This bot **does not** provide any unfair competitive advantages  
+- All interactions maintain natural human-like timing and limitations  
+- Absolutely no game client modifications are implemented  
+
+### Performance Considerations
+🛡️ **Server Protection Measures**  
+- Built-in rate limiting prevents server overload  
+- Randomized delays mimic natural player behavior  
+- Strict character interaction limits preserve game performance  
+
+### Accessibility Focus
+♿ **Intended Use Cases**  
+This tool may be used for:  
+- Assistive technologies for players with disabilities  
+- Quality-of-life enhancements that don't violate game balance  
+- Non-disruptive social interaction support  
+
+❗ **Violation Warning**  
+Misuse of this software that impacts other players' experience or server stability 
+may result in:  
+- Account suspension by game moderators  
+- Blacklisting of associated IP addresses  
+- Permanent ban from game services  
+
+**Developers Disclaimer**  
+This project is not affiliated with Pony Town or its developers. Use at your own risk. 
+We strongly encourage:  
+- Regular manual gameplay  
+- Respect for all community members  
+- Immediate discontinuation of use if requested by game staff  
+
 ### License
 
 This project is licensed under the MIT License.
