@@ -34,7 +34,10 @@ export const CONFIG = {
     RESPONSE_INTERVAL: parseInt(process.env.RESPONSE_INTERVAL || '300000'),
     PERSONALITY: {
       NAME: process.env.PERSONALITY_NAME || 'Unknown',
-      TRAITS: [process.env.RESPONSE_INTERVAL || 'адаптивный', 'наблюдательный', 'отзывчивый'],
+      TRAITS: (process.env.PERSONALITY_TRAITS || 'friendly')
+      .split(',')
+      .map(t => t.trim().toLowerCase())
+      .filter(t => t.length > 0),
       SPEECH_STYLE: process.env.PERSONALITY_SPEECH_STYLE || 'Используй контекст игры и реакцию на окружение'
     },
     PROMPTS: {

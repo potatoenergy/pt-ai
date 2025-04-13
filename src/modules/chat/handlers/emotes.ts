@@ -28,43 +28,65 @@ export class EmoteHandler {
   constructor(private page: Page) { }
 
   async handle(message: ChatMessage): Promise<boolean> {
-    const emoteCommand = this.determineEmoteCommand(message.text);
-    if (!emoteCommand) return false;
-
     try {
+      const emoteCommand = this.determineEmoteCommand(message.text);
+      if (!emoteCommand) return false;
+
       await this.sendEmoteCommand(emoteCommand);
-      logger.info(`Emote executed: ${emoteCommand}`);
       return true;
     } catch (error) {
-      await ErrorHandler.handle(this.page, error as Error, 'EmoteHandler');
+      await ErrorHandler.handle(this.page, error, 'EmoteHandler');
       return false;
     }
   }
 
   private determineEmoteCommand(text: string): string | null {
-    const lowerText = text.toLowerCase();
+    const normalizedText = this.normalizeText(text);
 
-    if (this.containsKeywords(lowerText, ['согласен', 'да', 'верно', 'точно'])) {
-      return this.getRandomCommand(EMOTE_COMMANDS.agreement);
-    }
-    if (this.containsKeywords(lowerText, ['не согласен', 'нет', 'неверно', 'неправильно'])) {
-      return this.getRandomCommand(EMOTE_COMMANDS.disagreement);
-    }
-    if (this.containsKeywords(lowerText, ['смех', 'радость', 'веселье', 'шутка'])) {
-      return this.getRandomCommand(EMOTE_COMMANDS.positive);
-    }
-    if (this.containsKeywords(lowerText, ['грусть', 'злость', 'печаль', 'разочарование'])) {
-      return this.getRandomCommand(EMOTE_COMMANDS.negative);
-    }
-    if (this.containsKeywords(lowerText, ['задумчивость', 'усталость', 'нейтрально'])) {
-      return this.getRandomCommand(EMOTE_COMMANDS.neutral);
+    const emotionPatterns = {
+      agreement: [
+        /\b(соглас[еннаоы]|да+|угу|конечно|прав(а|ы|ильно)?|точно|верно)\b/,
+        /(^|\s)ага?($|\s)/,
+        /подтвержд(аю|яю|ение)/
+      ],
+      disagreement: [
+        /\b(несоглас[еннаоы]|нет[у]?|неверно|ошиб(аешься|ка)|заблуждаешься)\b/,
+        /(не\s+прав)|(нет\s+так)/,
+        /отрица(ю|ние|тельно)/
+      ],
+      positive: [
+        /\b(сме(ю|ёшь|х|шно)|рж(у|ешь)|хах?а|хех?е|лол|рад(а|ы|о)|весел(а|о|ы)|ура|шутк(а|и))\b/,
+        /(^|\s)хо($|\s)/,
+        /улыб(аюсь|ается|ни)/
+      ],
+      negative: [
+        /\b(груст(но|ен|на|ь)|печал(ен|ь|но|лю)|зл(а|о|ы)|бесит|разочарован|обид(а|но|ело))\b/,
+        /(^|\s)плак(аю|у|ал)($|\s)/,
+        /тоск(а|но|ливо)/
+      ],
+      neutral: [
+        /\b(дума(ю|ешь)|задума(лся|лась)|уста(л|ла|ло)|сонно|чих|апчхи|размышляю)\b/,
+        /(усталость|нейтрально)/,
+        /(скучн[оа]|без\s+эмоций)/
+      ]
+    };
+
+    for (const [emotion, patterns] of Object.entries(emotionPatterns)) {
+      if (patterns.some(p => p.test(normalizedText))) {
+        return this.getRandomCommand(EMOTE_COMMANDS[emotion]);
+      }
     }
 
     return null;
   }
 
-  private containsKeywords(text: string, keywords: string[]): boolean {
-    return keywords.some(keyword => text.includes(keyword));
+  private normalizeText(text: string): string {
+    return text
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^\p{L}\s]/gu, "")
+      .replace(/\s+/g, " ");
   }
 
   private getRandomCommand(commands: string[]): string {
@@ -72,15 +94,21 @@ export class EmoteHandler {
   }
 
   private async sendEmoteCommand(command: string): Promise<void> {
-    await ChatHelper.sendMessage(this.page, command);
+    try {
+      await ChatHelper.sendMessage(this.page, command);
 
-    await this.page.waitForFunction(
-      () => {
-        const lastMessage = document.querySelector('.chat-line:last-child .chat-line-message');
-        return lastMessage && lastMessage.textContent?.trim() === command;
-      },
-      { timeout: 5000 }
-    );
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      logger.debug(`Emote triggered: ${command}`);
+
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message.includes('Timeout')) {
+          logger.warn(`Emote delay detected: ${command}`);
+          return;
+        }
+        throw new Error(`Emote failed: ${error.message}`);
+      }
+      throw new Error('Unknown error in emote handling');
+    }
   }
-
 }

@@ -22,7 +22,7 @@ export class AIClient {
     });
   }
 
-  async generateResponse(prompt: string, context: string): Promise<string | null> {
+  async generateResponse(prompt: string, context: string): Promise<string> {
     const maxRetries = 3;
     let attempt = 0;
 
@@ -40,13 +40,17 @@ export class AIClient {
           max_tokens: CONFIG.AI.MAX_TOKENS
         });
 
+        if (!response?.choices[0]?.message?.content) {
+          throw new Error('Empty AI response');
+        }
+
         return response.choices[0].message.content;
       } catch (error) {
         if (error instanceof Error && error.name === 'AbortError') {
-          return null;
+          return '';
         }
         logger.error(`AI API Error: ${error}`);
-        await ChatHelper.sendMessage(this.page, "Произошла ошибка при обращении к API. Попробуем снова.");
+        await ChatHelper.sendMessage(this.page, "Проблема с API. Попробуем еще раз...");
         attempt++;
         await new Promise(resolve => setTimeout(resolve, 5000 * attempt));
       } finally {
@@ -54,8 +58,8 @@ export class AIClient {
       }
     }
 
-    await ChatHelper.sendMessage(this.page, "Не удалось получить ответ от API после нескольких попыток.");
-    throw new Error("Не удалось получить ответ от API после нескольких попыток.");
+    await ChatHelper.sendMessage(this.page, "Не удалось получить ответ после нескольких попыток.");
+    return '';
   }
 
   abortCurrentRequest() {

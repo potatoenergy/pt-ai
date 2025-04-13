@@ -11,13 +11,25 @@ import { ChatHelper } from './utils/helpers';
 import { AdvancedChatHandler } from './modules/chat/handlers/advanced';
 import { ChatResponseHandler } from './modules/chat/handlers/response';
 
+function validatePersonality() {
+  const validTraits = ['friendly', 'playful', 'observant', 'curious', 'witty'];
+  const invalid = CONFIG.BOT.PERSONALITY.TRAITS.filter(t => !validTraits.includes(t));
+  
+  if (invalid.length > 0) {
+    logger.error(`Invalid personality traits: ${invalid.join(', ')}`);
+    process.exit(1);
+  }
+}
+
 async function main() {
   try {
+    validatePersonality();
     const browser = await BrowserService.launch();
     const page = await browser.newPage();
 
     await page.setUserAgent(CONFIG.BROWSER.USER_AGENT);
     await BrowserUtils.injectCookies(page);
+    
     await page.evaluateOnNewDocument(() => {
       Object.defineProperty(navigator, 'webdriver', { get: () => false });
     });
@@ -36,8 +48,7 @@ async function main() {
     logger.info('Initializing game...');
     await BrowserUtils.waitForGameLoad(page);
     await BrowserUtils.clickPlayButton(page);
-    await new Promise((resolve) => setTimeout(resolve, 5000));
-    // await ChatHelper.sendMessage(page, 'Hi! :paws:');
+    await new Promise(resolve => setTimeout(resolve, 5000));
 
     const chatListener = new ChatListener(page);
     const commandHandler = new CommandHandler(page);
