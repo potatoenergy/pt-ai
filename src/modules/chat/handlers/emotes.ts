@@ -2,6 +2,7 @@ import { Page } from 'puppeteer-core';
 import { ChatMessage } from '../../../types';
 import { logger } from '../../../utils/logger';
 import { ErrorHandler } from '../../../utils/errorHandler';
+import { ChatHelper } from '../../../utils/helpers';
 
 const EMOTE_COMMANDS: Record<string, string[]> = {
   agreement: [
@@ -71,18 +72,15 @@ export class EmoteHandler {
   }
 
   private async sendEmoteCommand(command: string): Promise<void> {
-    await this.page.evaluate((cmd) => {
-      const chatInput = document.querySelector('textarea[aria-label="Chat message"]') as HTMLTextAreaElement;
-      if (chatInput) {
-        chatInput.value = cmd;
-        const event = new Event('input', { bubbles: true });
-        chatInput.dispatchEvent(event);
+    await ChatHelper.sendMessage(this.page, command);
 
-        const sendButton = document.querySelector('button[title="Send message"]') as HTMLElement;
-        if (sendButton) {
-          sendButton.click();
-        }
-      }
-    }, command);
+    await this.page.waitForFunction(
+      () => {
+        const lastMessage = document.querySelector('.chat-line:last-child .chat-line-message');
+        return lastMessage && lastMessage.textContent?.trim() === command;
+      },
+      { timeout: 5000 }
+    );
   }
+
 }
