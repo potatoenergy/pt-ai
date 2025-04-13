@@ -68,8 +68,19 @@ export class AdvancedChatHandler {
       ? `Текущая цель: ${this.currentTarget}\n`
       : 'Автономный режим\n';
 
-    const prompt = `${CONFIG.BOT.PERSONALITY.NAME} (${CONFIG.BOT.PERSONALITY.TRAITS.join(', ')
-      })\n${context}Сообщение: "${text}"\nОтправитель: ${sender}`;
+      const prompt = [
+        `${CONFIG.BOT.PERSONALITY.NAME} (${CONFIG.BOT.PERSONALITY.TRAITS.join(', ')})`,
+        `Стиль: ${CONFIG.BOT.PERSONALITY.SPEECH_STYLE}`,
+        `Жесткие ограничения:`,
+        `- Только 1-2 коротких предложения`,
+        `- Максимум 149 символов`,
+        `- Только разговорный стиль`,
+        `- Никаких Markdown`,
+        `- Используй эмодзи для выразительности`,
+        `Контекст: ${context}`,
+        `Сообщение: "${text}"`,
+        `Ответь как персонаж игры:`
+      ].join('\n');
 
     const response = await this.aiClient.generateResponse(prompt, sender);
     if (!response) throw new Error('Failed to generate response');
