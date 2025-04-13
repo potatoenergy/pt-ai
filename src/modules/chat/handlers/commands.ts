@@ -15,6 +15,8 @@ export class CommandHandler {
     const { command, args } = this.parseCommand(message.text);
     if (!command) return false;
 
+    logger.debug(`Processing ${command}: "${args}"`);
+
     try {
       switch (command.toLowerCase()) {
         case 'c':
