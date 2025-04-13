@@ -16,13 +16,18 @@
     "@types/node": "^20.12.7",
     "@types/puppeteer-core": "^7.0.4",
     "dotenv": "^16.4.5",
+    "dotenv-expand": "^11.0.0",
     "openai": "^4.52.3",
-    "puppeteer-core": "^22.10.1",
+    "puppeteer-core": "^21.8.0",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5",
-    "puppeteer-extra-plugin-stealth": "^2.11.2"
+    "winston": "^3.13.0",
+    "winston-daily-rotate-file": "^4.7.1",
+    "fs-extra": "^11.2.0"
   },
   "devDependencies": {
+    "@types/fs-extra": "^11.0.3",
     "eslint": "9.7.0",
     "nodemon": "^3.1.4"
   }
