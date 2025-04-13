@@ -58,8 +58,8 @@ async function main() {
 
     chatListener.subscribe(async (message: ChatMessage) => {
       try {
-        if (await commandHandler.handle(message)) return;
         if (await emoteHandler.handle(message)) return;
+        if (await commandHandler.handle(message)) return;
         if (await advancedHandler.handleAdvancedBehavior(message)) return;
         if (await chatResponseHandler.handle(message)) return;
       } catch (error) {
