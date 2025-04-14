@@ -39,7 +39,7 @@ export class ChatListener {
           this.lastMessageTime = Date.now();
         }
 
-        if (Date.now() - this.lastMessageTime > 180000) {
+        if (Date.now() - this.lastMessageTime > CONFIG.RESPONSE_INTERVAL) {
           await this.handleIdleState();
         }
 

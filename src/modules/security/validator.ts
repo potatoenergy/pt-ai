@@ -1,3 +1,4 @@
+import { CONFIG } from '../../config';
 import { ChatMessage } from '../../types';
 
 export class SecurityValidator {
@@ -14,8 +15,6 @@ export class SecurityValidator {
   }
 
   sanitizeInput(text: string): string {
-    return text
-      .replace(/[^\p{L}\p{M}\p{N}\p{P}\p{S}\p{Z}\s]/gu, '')
-      .substring(0, 200);
+    return text.substring(0, CONFIG.MAX_MESSAGE_LENGTH);
   }
 }

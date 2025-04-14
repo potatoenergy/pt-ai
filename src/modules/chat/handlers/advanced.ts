@@ -17,7 +17,7 @@ export class AdvancedChatHandler extends ChatHandler {
   }
 
   async shouldHandle(message: ChatMessage): Promise<boolean> {
-    const interval = CONFIG.BOT.RESPONSE_INTERVAL;
+    const interval = CONFIG.RESPONSE_INTERVAL;
     return (Date.now() - this.lastResponseTime) > interval;
   }
 
@@ -37,7 +37,7 @@ export class AdvancedChatHandler extends ChatHandler {
     return this.generator.generate(
       "Generate environmental observation",
       "Initiate social interaction",
-      CONFIG.BOT.PERSONALITY.NAME
+      CONFIG.PERSONALITY_NAME
     );
   }
 

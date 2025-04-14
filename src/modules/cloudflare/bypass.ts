@@ -1,9 +1,10 @@
 import { Page } from 'puppeteer-core';
 import { logger } from '../../utils/logger';
 import { ErrorHandler } from '../../utils/errorHandler';
+import { CONFIG } from '../../config';
 
 export class CloudflareBypasser {
-  private static readonly MAX_RETRIES = 5;
+  private static readonly MAX_RETRIES = CONFIG.DEBUG_MODE ? 10 : 5;
   private static readonly CHECK_INTERVAL = 5000;
 
   constructor(private page: Page) { }

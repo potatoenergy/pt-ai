@@ -1,7 +1,6 @@
 import OpenAI from 'openai';
 import { CONFIG } from '../../config';
 import { logger } from '../../utils/logger';
-import { ChatHelper } from '../../utils/helpers';
 import { Page } from 'puppeteer-core';
 
 export class AIClient {
@@ -10,8 +9,8 @@ export class AIClient {
 
   constructor(private page: Page) {
     this.client = new OpenAI({
-      apiKey: CONFIG.AI.API_KEY,
-      baseURL: CONFIG.AI.BASE_URL,
+      apiKey: CONFIG.OPENAI_API_KEY,
+      baseURL: CONFIG.OPENAI_BASE_URL,
       fetch: (input, init) => {
         if (this.abortController) {
           init = init || {};
@@ -31,13 +30,13 @@ export class AIClient {
         this.abortController = new AbortController();
 
         const response = await this.client.chat.completions.create({
-          model: CONFIG.AI.MODEL,
+          model: CONFIG.OPENAI_MODEL,
           messages: [
             { role: 'system', content: prompt },
             { role: 'user', content: context }
           ],
-          temperature: CONFIG.AI.TEMPERATURE,
-          max_tokens: CONFIG.AI.MAX_TOKENS
+          temperature: CONFIG.OPENAI_TEMPERATURE,
+          max_tokens: CONFIG.OPENAI_MAX_TOKENS
         });
 
         if (!response?.choices[0]?.message?.content) {
@@ -57,11 +56,11 @@ export class AIClient {
       }
     }
 
-    await ChatHelper.sendMessage(this.page, "Не удалось получить ответ после нескольких попыток.");
+    logger.error('All AI attempts failed');
     return '';
   }
 
-  abortCurrentRequest() {
+  abortCurrentRequest(): void {
     this.abortController?.abort();
   }
 }

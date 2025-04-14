@@ -13,7 +13,7 @@ export class ResponseGenerator {
   async generate(text: string, context: string, sender: string): Promise<string> {
     const prompt = this.buildPrompt(text, context);
     const response = await this.aiClient.generateResponse(prompt, sender);
-    
+
     if (!response) {
       logger.warn('Empty response from AI client');
       return '';
@@ -24,10 +24,10 @@ export class ResponseGenerator {
 
   private buildPrompt(text: string, context: string): string {
     return [
-      `${CONFIG.BOT.PERSONALITY.NAME} Personality Matrix:`,
-      `- Core Traits: ${CONFIG.BOT.PERSONALITY.TRAITS.join(', ')}`,
-      `- Speech Style: ${CONFIG.BOT.PERSONALITY.SPEECH_STYLE}`,
-      `- Language: ${CONFIG.BOT.LANGUAGE}`,
+      `${CONFIG.PERSONALITY_NAME} Personality Matrix:`,
+      `- Core Traits: ${CONFIG.PERSONALITY_TRAITS.join(', ')}`,
+      `- Speech Style: ${CONFIG.PERSONALITY_SPEECH_STYLE}`,
+      `- Language: ${CONFIG.LANGUAGE}`,
       `- Emotional Profile: ${this.getEmotionalVector()}`,
       '',
       `Operational Constraints:`,
@@ -48,7 +48,7 @@ export class ResponseGenerator {
   }
 
   private getEmotionalVector(): string {
-    const traits = CONFIG.BOT.PERSONALITY.TRAITS;
+    const traits = CONFIG.PERSONALITY_TRAITS;
     const emotionalMap: Record<string, string> = {
       friendly: 'Warm welcoming phrases',
       playful: 'Lighthearted jokes',
@@ -56,7 +56,7 @@ export class ResponseGenerator {
       curious: 'Inquisitive questions',
       witty: 'Clever wordplay'
     };
-    
+
     return traits
       .map((t: string) => emotionalMap[t] || t)
       .join(', ');

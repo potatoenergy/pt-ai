@@ -6,7 +6,7 @@ export class BrowserService {
   static async launch() {
     try {
       return await puppeteer.launch({
-        executablePath: CONFIG.BROWSER.CHROMIUM_PATH,
+        executablePath: CONFIG.CHROMIUM_PATH,
         headless: false,
         args: [
           '--no-sandbox',
@@ -16,8 +16,7 @@ export class BrowserService {
           '--no-first-run',
           '--no-zygote',
           '--single-process'
-        ],
-        defaultViewport: CONFIG.BROWSER.VIEWPORT
+        ]
       });
     } catch (error) {
       throw new Error(`Browser launch failed: ${error}`);

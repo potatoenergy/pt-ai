@@ -13,10 +13,10 @@ import { ChatHelper } from './utils/helpers';
 
 function validatePersonality() {
   const validTraits = ['friendly', 'playful', 'observant', 'curious', 'witty'];
-  const invalid = CONFIG.BOT.PERSONALITY.TRAITS.filter(t => !validTraits.includes(t));
+  const invalid = CONFIG.PERSONALITY_TRAITS.filter(t => !validTraits.includes(t));
 
   if (invalid.length > 0) {
-    logger.error(`Invalid personality traits: ${invalid.join(', ')}`);
+    logger.error(`Invalid traits: ${invalid.join(', ')}`);
     process.exit(1);
   }
 }
@@ -27,12 +27,16 @@ async function main() {
     const browser = await BrowserService.launch();
     const page = await browser.newPage();
 
-    await page.setUserAgent(CONFIG.BROWSER.USER_AGENT);
+    await page.setUserAgent(CONFIG.USER_AGENT);
     await BrowserUtils.injectCookies(page);
 
     await page.evaluateOnNewDocument(() => {
       Object.defineProperty(navigator, 'webdriver', { get: () => false });
     });
+
+    if (CONFIG.DEBUG_MODE) {
+      logger.level = 'debug';
+    }
 
     logger.info('Navigating to pony.town');
     await page.goto('https://pony.town', {

@@ -16,8 +16,8 @@ export class ChatResponseHandler extends ChatHandler {
   }
 
   async shouldHandle(message: ChatMessage): Promise<boolean> {
-    return CONFIG.BOT.CHAT_RESPONSE.ENABLED &&
-      Math.random() < CONFIG.BOT.CHAT_RESPONSE.PROBABILITY;
+    return CONFIG.CHAT_RESPONSE_ENABLED &&
+      Math.random() < CONFIG.CHAT_RESPONSE_PROBABILITY;
   }
 
   async handle(message: ChatMessage): Promise<boolean> {
