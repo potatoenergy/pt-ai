@@ -1,4 +1,5 @@
 import { Page } from 'puppeteer-core';
+import { ChatHandler } from './base';
 import { ChatMessage } from '../../../types';
 import { logger } from '../../../utils/logger';
 import { ErrorHandler } from '../../../utils/errorHandler';
@@ -24,16 +25,24 @@ const EMOTE_COMMANDS: Record<string, string[]> = {
   ]
 };
 
-export class EmoteHandler {
-  constructor(private page: Page) { }
+export class EmoteHandler extends ChatHandler {
+  static override priority = 900;
+
+  constructor(page: Page) {
+    super(page);
+  }
+
+  async shouldHandle(message: ChatMessage): Promise<boolean> {
+    return !!this.determineEmoteCommand(message.text);
+  }
 
   async handle(message: ChatMessage): Promise<boolean> {
     try {
-      const emoteCommand = this.determineEmoteCommand(message.text);
-      if (!emoteCommand) return false;
+      const command = this.determineEmoteCommand(message.text);
+      if (!command) return false;
 
-      logger.debug(`Detected emotion: ${emoteCommand} in message: "${message.text}"`);
-      await this.sendEmoteCommand(emoteCommand);
+      logger.debug(`Sending emote: ${command}`);
+      await ChatHelper.sendMessage(this.page, command);
       return true;
     } catch (error) {
       await ErrorHandler.handle(this.page, error as Error, 'EmoteHandler');
@@ -43,38 +52,19 @@ export class EmoteHandler {
 
   private determineEmoteCommand(text: string): string | null {
     const cleanText = this.normalizeText(text);
-    logger.debug(`Processing message: "${text}" → Normalized: "${cleanText}"`);
-
     const patterns = {
-      agreement: [
-        'соглас', 'да', 'верно', 'точно', 'прав ', 'угу', 
-        'конечно', 'подтверж', 'accept', 'yes', 'agree'
-      ],
-      disagreement: [
-        'не соглас', 'нет', 'неверно', 'не прав', 'отказ', 
-        'error', 'disagree', 'no', 'неа', 'ноуп'
-      ],
-      positive: [
-        'смех', 'радость', 'весел', 'шутк', 'хах', 'хех', 
-        'ржу', 'lol', 'laugh', 'happy', 'рад', 'ура'
-      ],
-      negative: [
-        'груст', 'злость', 'печал', 'разочарован', 'обид', 
-        'плач', 'слез', 'angry', 'sad', 'бесит'
-      ],
-      neutral: [
-        'думаю', 'задума', 'устал', 'сонно', 'чих', 
-        'апчхи', 'think', 'нейтрал', 'скучно'
-      ]
+      agreement: ['соглас', 'да', 'верно', 'точно', 'прав ', 'угу', 'конечно', 'подтверж', 'accept', 'yes', 'agree'],
+      disagreement: ['не соглас', 'нет', 'неверно', 'не прав', 'отказ', 'error', 'disagree', 'no', 'неа', 'ноуп'],
+      positive: ['смех', 'радость', 'весел', 'шутк', 'хах', 'хех', 'ржу', 'lol', 'laugh', 'happy', 'рад', 'ура'],
+      negative: ['груст', 'злость', 'печал', 'разочарован', 'обид', 'плач', 'слез', 'angry', 'sad', 'бесит'],
+      neutral: ['думаю', 'задума', 'устал', 'сонно', 'чих', 'апчхи', 'think', 'нейтрал', 'скучно']
     };
 
     for (const [emotion, keywords] of Object.entries(patterns)) {
       if (keywords.some(k => cleanText.includes(k))) {
-        logger.debug(`Matched ${emotion} pattern`);
         return this.getRandomCommand(EMOTE_COMMANDS[emotion]);
       }
     }
-
     return null;
   }
 
@@ -82,35 +72,14 @@ export class EmoteHandler {
     return text
       .toLowerCase()
       .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "") // Удаляем акценты
+      .replace(/[\u0300-\u036f]/g, "")
       .replace(/[^\p{L}\p{M}\p{N}\p{P}\p{S}\p{Z}]/gu, '')
       .replace(/\s+/g, ' ')
-      .replace(/[!?,.-]+/g, ' ') // Нормализуем пунктуацию
+      .replace(/[!?,.-]+/g, ' ')
       .trim();
   }
 
   private getRandomCommand(commands: string[]): string {
     return commands[Math.floor(Math.random() * commands.length)];
-  }
-
-  private async sendEmoteCommand(command: string): Promise<void> {
-    try {
-      await ChatHelper.sendMessage(this.page, command);
-      
-      // Проверка успешности отправки
-      await this.page.waitForFunction(
-        (cmd: string) => {
-          const messages = Array.from(document.querySelectorAll('.chat-line-message'));
-          return messages.some(m => m.textContent?.trim() === cmd);
-        },
-        { timeout: 5000 },
-        command
-      );
-      
-      logger.info(`Emote successfully sent: ${command}`);
-    } catch (error) {
-      logger.error(`Failed to send emote ${command}: ${error}`);
-      throw new Error(`Emote send failed: ${command}`);
-    }
   }
 }

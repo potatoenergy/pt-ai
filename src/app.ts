@@ -1,20 +1,20 @@
 import { BrowserService } from './services/browser';
 import { ChatListener } from './modules/chat/listener';
-import { CommandHandler } from './modules/chat/handlers/commands';
+import { PluginManager } from './modules/plugins/manager';
 import { EmoteHandler } from './modules/chat/handlers/emotes';
+import { CommandHandler } from './modules/chat/handlers/commands';
+import { AdvancedChatHandler } from './modules/chat/handlers/advanced';
+import { ChatResponseHandler } from './modules/chat/handlers/response';
 import { CloudflareBypasser } from './modules/cloudflare/bypass';
 import { BrowserUtils } from './services/browser/utils';
 import { CONFIG } from './config';
 import { logger } from './utils/logger';
-import { ChatMessage } from './types';
 import { ChatHelper } from './utils/helpers';
-import { AdvancedChatHandler } from './modules/chat/handlers/advanced';
-import { ChatResponseHandler } from './modules/chat/handlers/response';
 
 function validatePersonality() {
   const validTraits = ['friendly', 'playful', 'observant', 'curious', 'witty'];
   const invalid = CONFIG.BOT.PERSONALITY.TRAITS.filter(t => !validTraits.includes(t));
-  
+
   if (invalid.length > 0) {
     logger.error(`Invalid personality traits: ${invalid.join(', ')}`);
     process.exit(1);
@@ -29,7 +29,7 @@ async function main() {
 
     await page.setUserAgent(CONFIG.BROWSER.USER_AGENT);
     await BrowserUtils.injectCookies(page);
-    
+
     await page.evaluateOnNewDocument(() => {
       Object.defineProperty(navigator, 'webdriver', { get: () => false });
     });
@@ -51,19 +51,20 @@ async function main() {
     await new Promise(resolve => setTimeout(resolve, 5000));
 
     const chatListener = new ChatListener(page);
-    const commandHandler = new CommandHandler(page);
-    const emoteHandler = new EmoteHandler(page);
-    const advancedHandler = new AdvancedChatHandler(page);
-    const chatResponseHandler = new ChatResponseHandler(page);
+    const pluginManager = new PluginManager();
 
-    chatListener.subscribe(async (message: ChatMessage) => {
+    pluginManager.register(
+      new EmoteHandler(page),
+      new CommandHandler(page),
+      new AdvancedChatHandler(page),
+      new ChatResponseHandler(page)
+    );
+
+    chatListener.subscribe(async (message) => {
       try {
-        if (await emoteHandler.handle(message)) return;
-        if (await commandHandler.handle(message)) return;
-        if (await advancedHandler.handleAdvancedBehavior(message)) return;
-        if (await chatResponseHandler.handle(message)) return;
+        await pluginManager.handleMessage(message);
       } catch (error) {
-        logger.error(`Error processing message: ${error}`);
+        logger.error(`Message processing error: ${error}`);
       }
     });
 

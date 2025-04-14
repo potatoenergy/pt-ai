@@ -1,32 +1,36 @@
 import { Page } from 'puppeteer-core';
+import { ChatHandler } from './base';
 import { ChatMessage } from '../../../types';
 import { logger } from '../../../utils/logger';
 import { ResponseGenerator } from '../generator';
 import { CONFIG } from '../../../config';
 import { ChatHelper } from '../../../utils/helpers';
 
-export class ChatResponseHandler {
+export class ChatResponseHandler extends ChatHandler {
+  static override priority = 500;
   private generator: ResponseGenerator;
 
-  constructor(private page: Page) {
+  constructor(page: Page) {
+    super(page);
     this.generator = new ResponseGenerator(page);
   }
 
-  async handle(message: ChatMessage): Promise<boolean> {
-    if (!CONFIG.BOT.CHAT_RESPONSE.ENABLED) return false;
-    if (Math.random() >= CONFIG.BOT.CHAT_RESPONSE.PROBABILITY) return false;
+  async shouldHandle(message: ChatMessage): Promise<boolean> {
+    return CONFIG.BOT.CHAT_RESPONSE.ENABLED &&
+      Math.random() < CONFIG.BOT.CHAT_RESPONSE.PROBABILITY;
+  }
 
+  async handle(message: ChatMessage): Promise<boolean> {
     try {
       const response = await this.generator.generate(
         message.text,
-        `Respond to ${message.sender}'s message`,
+        `Respond to ${message.sender}`,
         message.sender
       );
-      
       await ChatHelper.sendMessage(this.page, response);
       return true;
     } catch (error) {
-      logger.error('Chat response error:', error);
+      logger.error('Response error:', error);
       return false;
     }
   }

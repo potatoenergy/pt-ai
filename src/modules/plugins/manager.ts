@@ -1,31 +1,28 @@
-import { Page } from 'puppeteer-core';
 import { ChatMessage } from '../../types';
 import { logger } from '../../utils/logger';
-
-export type Plugin = {
-  name: string;
-  priority: number;
-  handler: (message: ChatMessage) => Promise<boolean>;
-};
+import { ChatHandler } from '../chat/handlers/base';
 
 export class PluginManager {
-  private plugins: Plugin[] = [];
-
-  constructor(private page: Page) { }
-
-  register(plugin: Plugin) {
-    this.plugins.push(plugin);
-    this.plugins.sort((a, b) => b.priority - a.priority);
-    logger.info(`Registered plugin: ${plugin.name}`);
-  }
+  private handlers: ChatHandler[] = [];
 
   async handleMessage(message: ChatMessage): Promise<boolean> {
-    for (const plugin of this.plugins) {
-      if (await plugin.handler(message)) {
-        logger.debug(`Handled by plugin: ${plugin.name}`);
-        return true;
+    const sortedHandlers = [...this.handlers].sort((a, b) =>
+      b.getPriority() - a.getPriority()
+    );
+
+    for (const handler of sortedHandlers) {
+      if (await handler.shouldHandle(message)) {
+        logger.debug(`Processing message with ${handler.constructor.name}`);
+        const result = await handler.handle(message);
+        if (result) return true;
       }
     }
     return false;
+  }
+
+  register(...handlers: ChatHandler[]): void {
+    this.handlers.push(...handlers);
+    logger.info(`Registered ${handlers.length} handlers: ${handlers.map(h => h.constructor.name).join(', ')
+      }`);
   }
 }

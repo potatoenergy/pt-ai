@@ -1,22 +1,27 @@
 import { Page } from 'puppeteer-core';
+import { ChatHandler } from './base';
 import { ChatMessage } from '../../../types';
 import { logger } from '../../../utils/logger';
 import { AIClient } from '../../../services/ai/client';
 import { ChatHelper } from '../../../utils/helpers';
 
-export class CommandHandler {
+export class CommandHandler extends ChatHandler {
+  static override priority = 800;
   private aiClient: AIClient;
   private generationStartTime: number | null = null;
 
-  constructor(private page: Page) {
+  constructor(page: Page) {
+    super(page);
     this.aiClient = new AIClient(page);
+  }
+
+  async shouldHandle(message: ChatMessage): Promise<boolean> {
+    return !!this.parseCommand(message.text).command;
   }
 
   async handle(message: ChatMessage): Promise<boolean> {
     const { command, args } = this.parseCommand(message.text);
     if (!command) return false;
-
-    logger.debug(`Processing ${command}: "${args}"`);
 
     try {
       switch (command.toLowerCase()) {
@@ -30,29 +35,22 @@ export class CommandHandler {
           return false;
       }
     } catch (error) {
-      logger.error(`Command handling error: ${error}`);
-      await ChatHelper.sendMessage(this.page, "Произошла ошибка при обработке команды.");
+      logger.error(`Command error: ${error}`);
+      await ChatHelper.sendMessage(this.page, "⚠️ Command processing error");
       return false;
     }
   }
 
-  private parseCommand(text: string): { command: string; args: string } {
+  private parseCommand(text: string) {
     const match = text.match(/^\.(\w+)\s*(.*)/);
-    return match
-      ? { command: match[1], args: match[2] }
-      : { command: '', args: '' };
+    return match ? { command: match[1], args: match[2] } : { command: '', args: '' };
   }
 
   private async handleAICommand(args: string, sender: string) {
     if (!args) return;
-
     this.generationStartTime = Date.now();
-
     const response = await this.aiClient.generateResponse(args, sender);
-    if (response) {
-      await this.sendChatResponse(response);
-    }
-
+    if (response) await this.sendChatResponse(response);
     this.generationStartTime = null;
   }
 
@@ -68,7 +66,7 @@ export class CommandHandler {
     if (this.generationStartTime && Date.now() - this.generationStartTime > 120000) {
       this.aiClient.abortCurrentRequest();
       this.generationStartTime = null;
-      logger.warn('AI generation timeout exceeded. Stopping current request.');
+      logger.warn('AI generation timeout');
     }
   }
 }
