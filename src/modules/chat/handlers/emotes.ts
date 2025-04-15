@@ -4,6 +4,7 @@ import { ChatMessage } from '../../../types';
 import { logger } from '../../../utils/logger';
 import { ErrorHandler } from '../../../utils/errorHandler';
 import { ChatHelper } from '../../../utils/helpers';
+import { CONFIG } from '../../../config';
 
 const EMOTE_COMMANDS: Record<string, string[]> = {
   agreement: [
@@ -33,7 +34,8 @@ export class EmoteHandler extends ChatHandler {
   }
 
   async shouldHandle(message: ChatMessage): Promise<boolean> {
-    return !!this.determineEmoteCommand(message.text);
+    const isSelfMessage = message.sender.trim().toLowerCase() === CONFIG.PERSONALITY_NAME.toLowerCase().trim();
+    return !isSelfMessage && !!this.determineEmoteCommand(message.text);
   }
 
   async handle(message: ChatMessage): Promise<boolean> {

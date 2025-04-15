@@ -4,6 +4,7 @@ import { ChatMessage } from '../../../types';
 import { logger } from '../../../utils/logger';
 import { AIClient } from '../../../services/ai/client';
 import { ChatHelper } from '../../../utils/helpers';
+import { CONFIG } from '../../../config';
 
 export class CommandHandler extends ChatHandler {
   static override priority = 900;
@@ -16,7 +17,8 @@ export class CommandHandler extends ChatHandler {
   }
 
   async shouldHandle(message: ChatMessage): Promise<boolean> {
-    return !!this.parseCommand(message.text).command;
+    const isSelfMessage = message.sender.trim().toLowerCase() === CONFIG.PERSONALITY_NAME.toLowerCase().trim();
+    return !isSelfMessage && !!this.parseCommand(message.text).command;
   }
 
   async handle(message: ChatMessage): Promise<boolean> {

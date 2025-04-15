@@ -1,5 +1,6 @@
 import { Page } from 'puppeteer-core';
 import { logger } from './logger';
+import { CONFIG } from '../config';
 
 export class ChatHelper {
   static async sendMessage(page: Page, text: string): Promise<void> {
@@ -30,7 +31,7 @@ export class ChatHelper {
 
       await page.type(SELECTORS.CHAT_INPUT, text, { delay: 50 });
       await page.keyboard.press('Enter');
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, CONFIG.RESPONSE_DELAY));
 
       logger.info(`Message sent: "${text}"`);
     } catch (error) {

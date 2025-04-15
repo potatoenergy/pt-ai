@@ -16,9 +16,11 @@ export class ChatResponseHandler extends ChatHandler {
   }
 
   async shouldHandle(message: ChatMessage): Promise<boolean> {
-    return CONFIG.CHAT_RESPONSE_ENABLED &&
+    const isSelfMessage = message.sender.trim().toLowerCase() === CONFIG.PERSONALITY_NAME.toLowerCase().trim();
+    return !isSelfMessage && 
+      CONFIG.CHAT_RESPONSE_ENABLED &&
       Math.random() < CONFIG.CHAT_RESPONSE_PROBABILITY;
-  }
+  }  
 
   async handle(message: ChatMessage): Promise<boolean> {
     try {

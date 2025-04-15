@@ -58,11 +58,17 @@ export class ChatListener {
           isCommand: false
         }));
     });
-
-    return rawMessages.filter(msg =>
-      !CONFIG.IGNORE_USERS.includes(msg.sender.toLowerCase()) &&
-      msg.sender !== CONFIG.PERSONALITY_NAME
-    );
+  
+    return rawMessages.filter(msg => {
+      const normalizedSender = msg.sender
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim();
+        
+      return !CONFIG.IGNORE_USERS.includes(normalizedSender) &&
+             normalizedSender !== CONFIG.PERSONALITY_NAME.toLowerCase().trim();
+    });
   }
 
   private async notifySubscribers(message: ChatMessage): Promise<void> {

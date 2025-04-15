@@ -29,8 +29,14 @@ const ConfigSchema = z.object({
   RESPONSE_DELAY: z.coerce.number().min(100).max(10000).default(1500),
 
   IGNORE_USERS: z.string()
-    .default('')
-    .transform(s => s.split(',').map(u => u.trim().toLowerCase())),
+  .default('')
+  .transform(s => s.split(',')
+    .map(u => u.normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .trim()
+    )
+  ),
 
   CHAT_RESPONSE_ENABLED: z.coerce.boolean().default(false),
   CHAT_RESPONSE_PROBABILITY: z.coerce.number().min(0).max(1).default(0.2),
