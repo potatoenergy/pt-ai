@@ -26,7 +26,7 @@ const EMOTE_COMMANDS: Record<string, string[]> = {
 };
 
 export class EmoteHandler extends ChatHandler {
-  static override priority = 900;
+  static override priority = 1000;
 
   constructor(page: Page) {
     super(page);

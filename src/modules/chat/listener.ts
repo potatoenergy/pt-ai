@@ -1,13 +1,13 @@
 import { Page } from 'puppeteer-core';
 import { ChatMessage } from '../../types';
 import { logger } from '../../utils/logger';
-import { CONFIG } from '../../config';
 
 type MessageCallback = (message: ChatMessage) => Promise<void>;
 
 export class ChatListener {
   private subscribers: MessageCallback[] = [];
-  private lastMessageTime: number = Date.now();
+  private lastMessageTime = Date.now();
+  private isListening = false;
 
   constructor(private page: Page) { }
 
@@ -16,10 +16,16 @@ export class ChatListener {
   }
 
   public async startListening(): Promise<void> {
+    this.isListening = true;
     let lastMessageCount = 0;
 
-    while (true) {
+    while (this.isListening) {
       try {
+        if (this.page.isClosed()) {
+          logger.warn('The page is closed. Stopping listening.');
+          break;
+        }
+
         const messages = await this.page.evaluate(() => {
           return Array.from(document.querySelectorAll('.chat-line'))
             .map(el => ({
@@ -39,16 +45,18 @@ export class ChatListener {
           this.lastMessageTime = Date.now();
         }
 
-        if (Date.now() - this.lastMessageTime > CONFIG.RESPONSE_INTERVAL) {
-          await this.handleIdleState();
-        }
-
         await new Promise(resolve => setTimeout(resolve, 1000));
       } catch (error) {
-        logger.error(`Chat listening error: ${error}`);
-        await new Promise(resolve => setTimeout(resolve, 5000));
+        if (this.isListening) {
+          logger.error(`Listening error: ${error}`);
+          await new Promise(resolve => setTimeout(resolve, 5000));
+        }
       }
     }
+  }
+
+  public stopListening(): void {
+    this.isListening = false;
   }
 
   private async notifySubscribers(message: ChatMessage): Promise<void> {
@@ -58,29 +66,6 @@ export class ChatListener {
       } catch (error) {
         logger.error(`Subscriber error: ${error}`);
       }
-    }
-  }
-
-  private async handleIdleState(): Promise<void> {
-    const idleMessages = [
-      "Пони, сидит один и вокруг него различные красоты мира... Ему становится грустно, что никто не обращает на него внимание.",
-      "Он начинает думать вслух: 'Почему я такой одинокий?'",
-      "Вдруг он вспоминает: 'Может, стоит попробовать что-то новое?'"
-    ];
-
-    for (const message of idleMessages) {
-      await this.page.evaluate((text) => {
-        const textarea = document.querySelector<HTMLTextAreaElement>('textarea[aria-label="Chat message"]');
-        const sendButton = document.querySelector<HTMLElement>('button[title="Send message"]');
-
-        if (textarea && sendButton) {
-          textarea.value = text;
-          textarea.dispatchEvent(new Event('input', { bubbles: true }));
-          sendButton.click();
-        }
-      }, message);
-
-      await new Promise(resolve => setTimeout(resolve, 5000));
     }
   }
 }

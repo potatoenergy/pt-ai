@@ -6,7 +6,7 @@ import { AIClient } from '../../../services/ai/client';
 import { ChatHelper } from '../../../utils/helpers';
 
 export class CommandHandler extends ChatHandler {
-  static override priority = 800;
+  static override priority = 900;
   private aiClient: AIClient;
   private generationStartTime: number | null = null;
 

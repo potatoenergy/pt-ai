@@ -7,7 +7,7 @@ import { CONFIG } from '../../../config';
 import { ChatHelper } from '../../../utils/helpers';
 
 export class ChatResponseHandler extends ChatHandler {
-  static override priority = 500;
+  static override priority = 800;
   private generator: ResponseGenerator;
 
   constructor(page: Page) {

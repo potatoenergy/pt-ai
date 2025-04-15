@@ -1,3 +1,4 @@
+import { Browser } from 'puppeteer-core';
 import { BrowserService } from './services/browser';
 import { ChatListener } from './modules/chat/listener';
 import { PluginManager } from './modules/plugins/manager';
@@ -9,36 +10,27 @@ import { CloudflareBypasser } from './modules/cloudflare/bypass';
 import { BrowserUtils } from './services/browser/utils';
 import { CONFIG } from './config';
 import { logger } from './utils/logger';
-import { ChatHelper } from './utils/helpers';
-
-function validatePersonality() {
-  const validTraits = ['friendly', 'playful', 'observant', 'curious', 'witty'];
-  const invalid = CONFIG.PERSONALITY_TRAITS.filter(t => !validTraits.includes(t));
-
-  if (invalid.length > 0) {
-    logger.error(`Invalid traits: ${invalid.join(', ')}`);
-    process.exit(1);
-  }
-}
 
 async function main() {
+  let browser: Browser | null = null;
+
   try {
-    validatePersonality();
-    const browser = await BrowserService.launch();
+    browser = await BrowserService.launch();
     const page = await browser.newPage();
 
-    await page.setUserAgent(CONFIG.USER_AGENT);
+    const gracefulShutdown = async () => {
+      if (browser) {
+        await browser.close();
+        logger.info('Browser correctly closed');
+      }
+      process.exit(0);
+    };
+
+    browser.on('disconnected', gracefulShutdown);
+    process.on('SIGINT', gracefulShutdown);
+    process.on('SIGTERM', gracefulShutdown);
+
     await BrowserUtils.injectCookies(page);
-
-    await page.evaluateOnNewDocument(() => {
-      Object.defineProperty(navigator, 'webdriver', { get: () => false });
-    });
-
-    if (CONFIG.DEBUG_MODE) {
-      logger.level = 'debug';
-    }
-
-    logger.info('Navigating to pony.town');
     await page.goto('https://pony.town', {
       waitUntil: 'networkidle2',
       timeout: 60000
@@ -49,7 +41,6 @@ async function main() {
       throw new Error('Cloudflare bypass failed');
     }
 
-    logger.info('Initializing game...');
     await BrowserUtils.waitForGameLoad(page);
     await BrowserUtils.clickPlayButton(page);
     await new Promise(resolve => setTimeout(resolve, 5000));
@@ -66,17 +57,21 @@ async function main() {
 
     chatListener.subscribe(async (message) => {
       try {
-        await pluginManager.handleMessage(message);
+        const handled = await pluginManager.handleMessage(message);
+        logger.debug(handled
+          ? `Processed: ${pluginManager.lastHandler}`
+          : `Unprocessed`);
       } catch (error) {
-        logger.error(`Message processing error: ${error}`);
+        logger.error(`Handling error: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     });
 
-    logger.info('Starting chat listener...');
+    logger.info('Chat listener launched');
     await chatListener.startListening();
 
   } catch (error) {
-    logger.error('Fatal initialization error:', error);
+    logger.error(`Fatal error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    if (browser) await browser.close();
     process.exit(1);
   }
 }

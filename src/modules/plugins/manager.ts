@@ -4,6 +4,7 @@ import { ChatHandler } from '../chat/handlers/base';
 
 export class PluginManager {
   private handlers: ChatHandler[] = [];
+  public lastHandler: string | null = null;
 
   async handleMessage(message: ChatMessage): Promise<boolean> {
     const sortedHandlers = [...this.handlers].sort((a, b) =>
@@ -12,7 +13,7 @@ export class PluginManager {
 
     for (const handler of sortedHandlers) {
       if (await handler.shouldHandle(message)) {
-        logger.debug(`Processing message with ${handler.constructor.name}`);
+        this.lastHandler = handler.constructor.name;
         const result = await handler.handle(message);
         if (result) return true;
       }
@@ -22,7 +23,6 @@ export class PluginManager {
 
   register(...handlers: ChatHandler[]): void {
     this.handlers.push(...handlers);
-    logger.info(`Registered ${handlers.length} handlers: ${handlers.map(h => h.constructor.name).join(', ')
-      }`);
+    logger.info(`Handlers registered: ${handlers.length}`);
   }
 }
