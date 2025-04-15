@@ -4,63 +4,57 @@ AI ChatBot for Pony Town with Natural Interactions
 
 ## Compliance Statement
 
-⚠️ **Rules Compliance**
-
-- Use only **one account** you own
+⚠️ **Ethical Usage Requirements**
+- Use only **one personally owned account**
+- 3-second minimum action cooldown
+- 150 character message limit
+- Automatic session refresh every 2 hours
 - No automation of core gameplay mechanics
-- 3-second minimum delay between actions
-- Messages limited to 150 characters
-- Automatic session rotation every 2 hours
 
 ## Environment Variables
 
-`.env` example:
+`.env` configuration example:
 ```dotenv
-LANGUAGE=ru
-OPENAI_API_KEY=your-key
+OPENAI_API_KEY=sk-abc123
 PERSONALITY_NAME=PixelHoof
-PERSONALITY_TRAITS=friendly, observant, playful
-RESPONSE_INTERVAL=180000
-USER_AGENT="Mozilla/5.0 ..."
+IGNORE_USERS=Moderator,BotUser
+RESPONSE_DELAY=2000
 ```
 
-| Variable | Description |
-|----------|-------------|
-| `PERSONALITY_TRAITS` | Comma-separated: `curious`, `playful`, `witty` |
-| `RESPONSE_INTERVAL` | Delay between auto-messages (ms) |
-| `LANGUAGE` | `ru`/`en` - affects emotes and responses |
+| Variable | Purpose | Default |
+|----------|---------|---------|
+| `RESPONSE_DELAY` | Delay between chat checks (ms) | 1500 |
+| `IGNORE_USERS` | Comma-separated ignored users | - |
+| `MAX_EMOTES_PER_MIN` | Emote rate limit | 5 |
+| `DEBUG_MODE` | Enable debug logging | false |
 
-## Basic Interactions
+## Key Features
 
 **1. Commands:**
 ```bash
-.help - Show help
-.ai <текст> - Generate AI response
-.echo <текст> - Repeat message
+.help - Show help menu
+.ai <text> - Generate AI response
+.echo <text> - Repeat message
 ```
 
-**2. Auto-Emotes:**
+**2. Contextual Interactions**
 ```text
-User: "Это грустно..." 
-Bot: /sad + "Может прогуляемся? 🌈"
+User: "This location looks scary"
+Bot: /shiver "Maybe we should stick together? 👻"
 
-User: "Согласен!"
-Bot: /nod + "Точно! Давай проверим 🕵️♂️"
+User: "Agreed!"
+Bot: /nod "Let's do it! 🚀"
 
-User: "Ха-ха смешно!"
-Bot: /laugh + "Поймал настроение! 😆"
+User: "LOL that's funny"
+Bot: /laugh "Glad you liked it! 😂"
 ```
 
-**3. Context Responses:**
-```text
-User: "Что думаешь о новой локации?"
-Bot: "Выглядит эпично! Много мест для пряток 🍂"
+**3. Smart Filtering**
+- Ignores messages from specified users
+- Avoids self-replies
+- Sanitizes special characters
 
-User: "Как погода?"
-Bot: "Облачно, но наши гривы не промокнут! ☁️"
-```
-
-## Plugin Example
+## Plugin Development
 
 ```typescript
 // plugins/greetings.ts
@@ -69,33 +63,35 @@ export class GreetingsPlugin implements Plugin {
   priority = 100;
 
   async handler(message: ChatMessage) {
-    const triggers = ['привет', 'hi', 'hola'];
+    const triggers = ['hello', 'hi', 'hey'];
     if (triggers.some(t => message.text.toLowerCase().includes(t))) {
-      await this.sendWelcome(message);
+      await this.sendWelcome(message.sender);
       return true;
     }
     return false;
   }
 
-  private async sendWelcome(message: ChatMessage) {
-    // Implementation
+  private async sendWelcome(user: string) {
+    // Implementation logic
   }
 }
 ```
 
-## Technical Details
+## Technical Architecture
 
-- **Response Flow:**
-  1. Message sanitization
-  2. Emotion detection → Auto-emote
-  3. AI context analysis
-  4. Response generation
-  5. Rate limiting check
+**Processing Pipeline:**
+1. Message sanitization & validation
+2. User filter check
+3. Emotion detection → Auto-emote
+4. AI context analysis
+5. Response generation
+6. Rate limiting enforcement
 
-- **Safety Systems:**
-  - Banned word filter
-  - Flood protection
-  - Session expiration
+**Safety Systems:**
+- Banned pattern detection
+- Flood control
+- Session expiration
+- Input length validation
 
 ## License
 
