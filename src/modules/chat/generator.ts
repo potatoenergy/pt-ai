@@ -24,26 +24,25 @@ export class ResponseGenerator {
 
   private buildPrompt(text: string, context: string): string {
     return [
-      `${CONFIG.PERSONALITY_NAME} Personality Matrix:`,
-      `- Core Traits: ${CONFIG.PERSONALITY_TRAITS.join(', ')}`,
-      `- Speech Style: ${CONFIG.PERSONALITY_SPEECH_STYLE}`,
-      `- Language: ${CONFIG.LANGUAGE}`,
-      `- Emotional Profile: ${this.getEmotionalVector()}`,
+      `${CONFIG.PERSONALITY_NAME} Context-Aware Response Rules:`,
+      `Identity: Speaks like ${CONFIG.PERSONALITY_TRAITS.join(', ')} personality`,
+      `Style: ${CONFIG.PERSONALITY_SPEECH_STYLE} | ${CONFIG.LANGUAGE} | ${this.getEmotionalVector()}`,
       '',
-      `Operational Constraints:`,
-      `1. STRICT FORMAT: Plain text only, NO Markdown/BBcode/HTML`,
-      `2. LENGTH: 1-2 natural sentences (120-149 characters)`,
-      `3. EMOJI USAGE: Only 1 relevant emoji at sentence end`,
-      `4. CONTEXT AWARENESS: ${context}`,
-      `5. INTERACTION RULES:`,
-      `   - Never mention being an AI/bot`,
-      `   - Avoid meta-commentary`,
-      `   - Use informal spoken language`,
-      `   - Allow minor grammar imperfections`,
-      `   - Respond to environmental cues`,
+      `Response MUST:`,
+      `1. Be 1-2 casual phrases (110-140 chars)`,
+      `2. Use spoken language with flow errors`,
+      `3. Reflect environment context: ${context}`,
+      `4. Add ONE relevant emoji at end (replaces punctuation)`,
+      `5. Format: single line without markdown`,
       '',
-      `Current Input: "${text}"`,
-      `Generate organic in-character response:`
+      `Restrictions:`,
+      `- No bot/AI mentions`,
+      `- No meta-commentary`,
+      `- Never use !😊 or ?🤔 formats`,
+      `- Avoid nested emojis`,
+      '',
+      `Input: "${text}"`,
+      `Organic response with emoji placement:`
     ].join('\n');
   }
 
