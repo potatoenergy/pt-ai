@@ -1,12 +1,13 @@
 import { Page } from 'puppeteer-core';
 import { ChatMessage } from '../../types';
 import { logger } from '../../utils/logger';
+import { CONFIG } from '../../config';
 
 type MessageCallback = (message: ChatMessage) => Promise<void>;
 
 export class ChatListener {
   private subscribers: MessageCallback[] = [];
-  private lastMessageTime = Date.now();
+  private lastMessageCount = 0;
   private isListening = false;
 
   constructor(private page: Page) { }
@@ -17,46 +18,51 @@ export class ChatListener {
 
   public async startListening(): Promise<void> {
     this.isListening = true;
-    let lastMessageCount = 0;
 
     while (this.isListening) {
       try {
         if (this.page.isClosed()) {
-          logger.warn('The page is closed. Stopping listening.');
+          logger.warn('Page closed, stopping listener');
           break;
         }
 
-        const messages = await this.page.evaluate(() => {
-          return Array.from(document.querySelectorAll('.chat-line'))
-            .map(el => ({
-              sender: el.querySelector('.chat-line-name-content')?.textContent?.trim() || 'Unknown',
-              text: el.querySelector('.chat-line-message')?.textContent?.trim() || '',
-              timestamp: new Date(),
-              isCommand: false
-            }));
-        });
+        const messages = await this.getFilteredMessages();
 
-        if (messages.length > lastMessageCount) {
-          const newMessages = messages.slice(lastMessageCount);
+        if (messages.length > this.lastMessageCount) {
+          const newMessages = messages.slice(this.lastMessageCount);
           for (const message of newMessages) {
             await this.notifySubscribers(message);
           }
-          lastMessageCount = messages.length;
-          this.lastMessageTime = Date.now();
+          this.lastMessageCount = messages.length;
         }
 
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve =>
+          setTimeout(resolve, CONFIG.RESPONSE_DELAY)
+        );
       } catch (error) {
         if (this.isListening) {
-          logger.error(`Listening error: ${error}`);
+          logger.error(`Chat error: ${error}`);
           await new Promise(resolve => setTimeout(resolve, 5000));
         }
       }
     }
   }
 
-  public stopListening(): void {
-    this.isListening = false;
+  private async getFilteredMessages(): Promise<ChatMessage[]> {
+    const rawMessages = await this.page.evaluate(() => {
+      return Array.from(document.querySelectorAll('.chat-line'))
+        .map(el => ({
+          sender: el.querySelector('.chat-line-name-content')?.textContent?.trim() || 'Unknown',
+          text: el.querySelector('.chat-line-message')?.textContent?.trim() || '',
+          timestamp: new Date(),
+          isCommand: false
+        }));
+    });
+
+    return rawMessages.filter(msg =>
+      !CONFIG.IGNORE_USERS.includes(msg.sender.toLowerCase()) &&
+      msg.sender !== CONFIG.PERSONALITY_NAME
+    );
   }
 
   private async notifySubscribers(message: ChatMessage): Promise<void> {
@@ -67,5 +73,9 @@ export class ChatListener {
         logger.error(`Subscriber error: ${error}`);
       }
     }
+  }
+
+  public stopListening(): void {
+    this.isListening = false;
   }
 }
