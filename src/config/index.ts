@@ -1,3 +1,4 @@
+// src/config/index.ts
 import dotenv from 'dotenv';
 import * as dotenvExpand from 'dotenv-expand';
 import { join } from 'path';
@@ -18,10 +19,11 @@ const ConfigSchema = z.object({
   OPENAI_TEMPERATURE: z.coerce.number().min(0).max(2).default(0.8),
   OPENAI_MAX_TOKENS: z.coerce.number().min(10).max(4000).default(150),
 
-  PERSONALITY_NAME: z.string().default('MyBot'),
+  PERSONALITY_NAME: z.string().default('Bot'),
   PERSONALITY_TRAITS: z.string()
     .transform(s => s.split(',').map(t => t.trim().toLowerCase()))
     .default('friendly'),
+  PERSONALITY_SPEECH_STYLE: z.string().default('Use the context of the game and reaction to the environment'),
 
   RESPONSE_INTERVAL: z.coerce.number().min(30000).default(180000),
   RESPONSE_DELAY: z.coerce.number().min(100).max(10000).default(1500),
@@ -29,6 +31,9 @@ const ConfigSchema = z.object({
   IGNORE_USERS: z.string()
     .default('')
     .transform(s => s.split(',').map(u => u.trim().toLowerCase())),
+
+  CHAT_RESPONSE_ENABLED: z.coerce.boolean().default(false),
+  CHAT_RESPONSE_PROBABILITY: z.coerce.number().min(0).max(1).default(0.2),
 
   USER_AGENT: z.string().default(
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
