@@ -15,7 +15,7 @@
   "dependencies": {
     "@types/node": "^22.14.1",
     "@types/puppeteer-core": "^7.0.4",
-    "dotenv": "^16.4.5",
+    "dotenv": "^17.2.1",
     "dotenv-expand": "^12.0.1",
     "openai": "^4.52.3",
     "puppeteer-core": "^24.6.1",
