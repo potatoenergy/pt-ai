@@ -10,6 +10,7 @@ on:
 
 jobs:
   build-and-push:
+    if: ${{ !endsWith(github.actor, '[bot]') }}
     runs-on: ubuntu-latest
 
     permissions:
